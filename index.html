@@ -7,12 +7,16 @@
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛓️</text></svg>"
     />
     <title>Prison Counter</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <style>
       * {
         box-sizing: border-box;
         user-select: none;
         -webkit-user-select: none;
+        touch-action: manipulation;
       }
 
       body,
@@ -25,7 +29,6 @@
         font-family: monospace;
       }
 
-      /* Fondo simulando pared de prisión / concreto */
       .wall {
         width: 100vw;
         height: 100vh;
@@ -42,27 +45,27 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        padding: 20px 40px 40px 40px;
+        padding: 15px;
         box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
         cursor: pointer;
       }
 
-      /* Barra Superior / Navbar */
       .navbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background-color: rgba(0, 0, 0, 0.4);
-        padding: 10px 20px;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 10px 15px;
         border-radius: 8px;
         border: 1px solid rgba(255, 255, 255, 0.05);
         z-index: 20;
+        gap: 10px;
       }
 
       .date-controls {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 8px;
         color: #ddd;
         font-size: 15px;
         font-weight: bold;
@@ -70,8 +73,9 @@
 
       .current-date-text {
         text-transform: capitalize;
-        min-width: 200px;
         text-align: center;
+        cursor: pointer;
+        padding: 6px 8px;
       }
 
       .nav-btn,
@@ -79,11 +83,16 @@
         background: #1e1e1e;
         color: #ccc;
         border: 1px solid #444;
-        padding: 6px 14px;
-        border-radius: 4px;
+        min-height: 40px;
+        min-width: 40px;
+        padding: 6px 12px;
+        border-radius: 6px;
         cursor: pointer;
         font-family: monospace;
         font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         transition: all 0.2s ease;
       }
 
@@ -97,23 +106,23 @@
       .reset-btn {
         background: #3a1c1c;
         border-color: #5a2828;
-        color: #e58585;
+        font-size: 16px;
       }
 
       .reset-btn:hover {
         background: #5a2828;
-        color: #ff9d9d;
+        border-color: #7a3838;
       }
 
-      /* Contenedor principal de los grupos de rayas */
       #tally-container {
         display: flex;
         flex-wrap: wrap;
-        gap: 30px;
+        gap: 20px;
         align-content: flex-start;
-        height: 75vh;
+        flex-grow: 1;
         overflow-y: auto;
-        margin-top: 20px;
+        margin-top: 15px;
+        padding: 5px;
       }
 
       #tally-container::-webkit-scrollbar {
@@ -124,18 +133,16 @@
         scrollbar-width: none;
       }
 
-      /* Cada grupo de hasta 5 rayas */
       .group {
         position: relative;
-        width: 50px;
-        height: 60px;
+        width: 45px;
+        height: 55px;
         display: flex;
         justify-content: flex-start;
-        gap: 9px;
+        gap: 8px;
         align-items: center;
       }
 
-      /* Estilo base de las rayas talladas */
       .mark {
         background-color: #d8d8d8;
         box-shadow:
@@ -145,19 +152,17 @@
         opacity: 0.9;
       }
 
-      /* Rayas verticales (1 a 4) */
       .vertical-mark {
         width: 4px;
         height: 100%;
         transform: rotate(calc(-2deg + 4deg * var(--rand)));
       }
 
-      /* Quinta raya (Horizontal / Cruzada) */
       .horizontal-mark {
         position: absolute;
         top: 50%;
-        left: -6px;
-        width: 62px;
+        left: -5px;
+        width: 55px;
         height: 5px;
         transform: translateY(-50%) rotate(-18deg);
         z-index: 10;
@@ -165,21 +170,45 @@
 
       .footer {
         color: #666;
-        font-size: 14px;
+        font-size: 13px;
         display: flex;
         justify-content: space-between;
+        align-items: center;
         pointer-events: none;
+        padding-top: 10px;
       }
 
       .counter {
         color: #888;
         font-weight: bold;
       }
+
+      @media (max-width: 600px) {
+        .wall {
+          padding: 10px;
+        }
+
+        .navbar {
+          padding: 8px 12px;
+        }
+
+        .current-date-text {
+          font-size: 13px;
+          padding: 4px;
+        }
+
+        .footer {
+          font-size: 11px;
+        }
+
+        #tally-container {
+          gap: 15px;
+        }
+      }
     </style>
   </head>
   <body>
     <div class="wall" id="wall">
-      <!-- Navbar con controles de Fecha, Hoy y Reinicio -->
       <div class="navbar" id="navbar">
         <div class="date-controls">
           <button class="nav-btn" id="prev-day">&lt;</button>
@@ -187,15 +216,20 @@
           <button class="nav-btn" id="next-day">&gt;</button>
         </div>
         <div>
-          <button class="reset-btn" id="reset-btn">Reset Count</button>
+          <button class="reset-btn" id="reset-btn" title="Reset Count">
+            <svg viewBox="0 0 24 24" fill="#fff">
+              <path
+                d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12z"
+              />
+            </svg>
+          </button>
         </div>
       </div>
 
-      <!-- Contenedor de Rayas -->
       <div id="tally-container"></div>
 
       <div class="footer">
-        <span>Left click: +1 | Right click: -1</span>
+        <span>Tap / Left click: +1 | Right click: -1</span>
         <span class="counter">Total: <span id="day-count">0</span></span>
       </div>
     </div>
@@ -210,11 +244,9 @@
       const resetBtn = document.getElementById("reset-btn");
 
       let currentDate = new Date();
-
       let dailyData =
         JSON.parse(localStorage.getItem("prison_days_dict")) || {};
 
-      // Obtener la clave interna en formato 'YYYY-MM-DD' para localStorage
       function getStorageKey(dateObj) {
         const year = dateObj.getFullYear();
         const month = String(dateObj.getMonth() + 1).padStart(2, "0");
@@ -222,7 +254,6 @@
         return `${year}-${month}-${day}`;
       }
 
-      // Formatear la fecha a un texto fácil de leer (ej: "lun, 16 de sep de 2024")
       function getHumanReadableDate(dateObj) {
         const options = {
           weekday: "short",
@@ -230,16 +261,14 @@
           month: "short",
           year: "numeric",
         };
-        return new Intl.DateTimeFormat("en-EN", options).format(dateObj);
+        return new Intl.DateTimeFormat("en-US", options).format(dateObj);
       }
 
-      // Obtener las rayas del día actual
       function getCurrentCount() {
         const dateKey = getStorageKey(currentDate);
         return dailyData[dateKey] || 0;
       }
 
-      // Renderizar marcas en pantalla
       function render() {
         currentDateText.textContent = getHumanReadableDate(currentDate);
 
@@ -274,7 +303,6 @@
         container.scrollTop = container.scrollHeight;
       }
 
-      // Guardar cambios en localStorage
       function saveAndRender(newCount) {
         const dateKey = getStorageKey(currentDate);
         if (newCount <= 0) {
@@ -287,7 +315,6 @@
         render();
       }
 
-      // Eventos de click en la pared
       wall.addEventListener("click", (e) => {
         if (e.target.closest("#navbar")) return;
 
@@ -305,7 +332,6 @@
         }
       });
 
-      // Navegación entre días
       prevBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         currentDate.setDate(currentDate.getDate() - 1);
@@ -326,11 +352,7 @@
 
       resetBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        if (
-          confirm(
-            `Do you really want to reset the count for ${getHumanReadableDate(currentDate)}?`,
-          )
-        ) {
+        if (confirm(`Do you really want to reset the count for this date?`)) {
           saveAndRender(0);
         }
       });
