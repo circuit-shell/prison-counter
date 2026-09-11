@@ -75,7 +75,6 @@
       }
 
       .nav-btn,
-      .today-btn,
       .reset-btn {
         background: #1e1e1e;
         color: #ccc;
@@ -89,22 +88,10 @@
       }
 
       .nav-btn:hover,
-      .today-btn:hover,
       .reset-btn:hover {
         background: #333;
         color: #fff;
         border-color: #666;
-      }
-
-      .today-btn {
-        background: #253325;
-        border-color: #3b543b;
-        color: #92d892;
-      }
-
-      .today-btn:hover {
-        background: #334833;
-        color: #b7f3b7;
       }
 
       .reset-btn {
@@ -200,7 +187,6 @@
           <button class="nav-btn" id="next-day">&gt;</button>
         </div>
         <div>
-          <button class="today-btn" id="today-btn">Today</button>
           <button class="reset-btn" id="reset-btn">Reset Count</button>
         </div>
       </div>
@@ -221,7 +207,6 @@
       const currentDateText = document.getElementById("current-date-text");
       const prevBtn = document.getElementById("prev-day");
       const nextBtn = document.getElementById("next-day");
-      const todayBtn = document.getElementById("today-btn");
       const resetBtn = document.getElementById("reset-btn");
 
       let currentDate = new Date();
@@ -330,12 +315,6 @@
       nextBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         currentDate.setDate(currentDate.getDate() + 1);
-        render();
-      });
-
-      todayBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        currentDate = new Date();
         render();
       });
 
