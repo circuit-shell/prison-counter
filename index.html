@@ -1,183 +1,362 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛓️</text></svg>">
-  <title>Prison Counter</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-user-select: none;
-    }
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛓️</text></svg>"
+    />
+    <title>Prison Counter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      * {
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+      }
 
-    body, html {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: monospace;
-    }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: monospace;
+      }
 
-    /* Fondo simulando pared de prisión / concreto */
-    .wall {
-      width: 100vw;
-      height: 100vh;
-      background-color: #2b2b2b;
-      background-image: 
-        radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0),
-        radial-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 0);
-      background-size: 20px 20px, 30px 30px;
-      background-position: 0 0, 15px 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 40px;
-      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
-      cursor: pointer;
-    }
+      /* Fondo simulando pared de prisión / concreto */
+      .wall {
+        width: 100vw;
+        height: 100vh;
+        background-color: #2b2b2b;
+        background-image:
+          radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0),
+          radial-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 0);
+        background-size:
+          20px 20px,
+          30px 30px;
+        background-position:
+          0 0,
+          15px 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px 40px 40px 40px;
+        box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+        cursor: pointer;
+      }
 
-    /* Contenedor principal de los grupos de rayas */
-    #tally-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      align-content: flex-start;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
+      /* Barra Superior / Navbar */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.4);
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        z-index: 20;
+      }
 
-    #tally-container::-webkit-scrollbar {
-      display: none;
-    }
-    #tally-container {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+      .date-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #ddd;
+        font-size: 15px;
+        font-weight: bold;
+      }
 
-    /* Cada grupo de hasta 5 rayas */
-    .group {
-      position: relative;
-      width: 50px;
-      height: 60px;
-      display: flex;
-      justify-content: flex-start; /* Alinea las rayas ordenadamente de izquierda a derecha */
-      gap: 9px;                   /* Espaciado constante entre rayas verticales */
-      align-items: center;
-    }
+      .current-date-text {
+        text-transform: capitalize;
+        min-width: 200px;
+        text-align: center;
+      }
 
-    /* Estilo base de las rayas talladas */
-    .mark {
-      background-color: #d8d8d8;
-      box-shadow: 
-        -1px -1px 1px rgba(0,0,0,0.8),
-        1px 1px 1px rgba(255,255,255,0.2);
-      border-radius: 2px;
-      opacity: 0.9;
-    }
+      .nav-btn,
+      .today-btn,
+      .reset-btn {
+        background: #1e1e1e;
+        color: #ccc;
+        border: 1px solid #444;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: monospace;
+        font-size: 14px;
+        transition: all 0.2s ease;
+      }
 
-    /* Rayas verticales (1 a 4) */
-    .vertical-mark {
-      width: 4px;
-      height: 100%;
-      transform: rotate(calc(-2deg + 4deg * var(--rand)));
-    }
+      .nav-btn:hover,
+      .today-btn:hover,
+      .reset-btn:hover {
+        background: #333;
+        color: #fff;
+        border-color: #666;
+      }
 
-    /* Quinta raya (Horizontal / Cruzada) */
-    .horizontal-mark {
-      position: absolute;
-      top: 50%;
-      left: -6px;
-      width: 62px;
-      height: 5px;
-      transform: translateY(-50%) rotate(-18deg);
-      z-index: 10;
-    }
+      .today-btn {
+        background: #253325;
+        border-color: #3b543b;
+        color: #92d892;
+      }
 
-    .footer {
-      color: #666;
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-      pointer-events: none;
-    }
+      .today-btn:hover {
+        background: #334833;
+        color: #b7f3b7;
+      }
 
-    .counter {
-      color: #888;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
+      .reset-btn {
+        background: #3a1c1c;
+        border-color: #5a2828;
+        color: #e58585;
+      }
 
-  <div class="wall" id="wall">
-    <div id="tally-container"></div>
-    
-    <div class="footer">
-      <span>Left click: +1 | Right click: -1</span>
-      <span class="counter">Total: <span id="day-count">0</span></span>
+      .reset-btn:hover {
+        background: #5a2828;
+        color: #ff9d9d;
+      }
+
+      /* Contenedor principal de los grupos de rayas */
+      #tally-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        align-content: flex-start;
+        height: 75vh;
+        overflow-y: auto;
+        margin-top: 20px;
+      }
+
+      #tally-container::-webkit-scrollbar {
+        display: none;
+      }
+      #tally-container {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Cada grupo de hasta 5 rayas */
+      .group {
+        position: relative;
+        width: 50px;
+        height: 60px;
+        display: flex;
+        justify-content: flex-start;
+        gap: 9px;
+        align-items: center;
+      }
+
+      /* Estilo base de las rayas talladas */
+      .mark {
+        background-color: #d8d8d8;
+        box-shadow:
+          -1px -1px 1px rgba(0, 0, 0, 0.8),
+          1px 1px 1px rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        opacity: 0.9;
+      }
+
+      /* Rayas verticales (1 a 4) */
+      .vertical-mark {
+        width: 4px;
+        height: 100%;
+        transform: rotate(calc(-2deg + 4deg * var(--rand)));
+      }
+
+      /* Quinta raya (Horizontal / Cruzada) */
+      .horizontal-mark {
+        position: absolute;
+        top: 50%;
+        left: -6px;
+        width: 62px;
+        height: 5px;
+        transform: translateY(-50%) rotate(-18deg);
+        z-index: 10;
+      }
+
+      .footer {
+        color: #666;
+        font-size: 14px;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+      }
+
+      .counter {
+        color: #888;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wall" id="wall">
+      <!-- Navbar con controles de Fecha, Hoy y Reinicio -->
+      <div class="navbar" id="navbar">
+        <div class="date-controls">
+          <button class="nav-btn" id="prev-day">&lt;</button>
+          <span class="current-date-text" id="current-date-text">---</span>
+          <button class="nav-btn" id="next-day">&gt;</button>
+        </div>
+        <div>
+          <button class="today-btn" id="today-btn">Today</button>
+          <button class="reset-btn" id="reset-btn">Reset Count</button>
+        </div>
+      </div>
+
+      <!-- Contenedor de Rayas -->
+      <div id="tally-container"></div>
+
+      <div class="footer">
+        <span>Left click: +1 | Right click: -1</span>
+        <span class="counter">Total: <span id="day-count">0</span></span>
+      </div>
     </div>
-  </div>
 
-  <script>
-    const wall = document.getElementById('wall');
-    const container = document.getElementById('tally-container');
-    const countDisplay = document.getElementById('day-count');
+    <script>
+      const wall = document.getElementById("wall");
+      const container = document.getElementById("tally-container");
+      const countDisplay = document.getElementById("day-count");
+      const currentDateText = document.getElementById("current-date-text");
+      const prevBtn = document.getElementById("prev-day");
+      const nextBtn = document.getElementById("next-day");
+      const todayBtn = document.getElementById("today-btn");
+      const resetBtn = document.getElementById("reset-btn");
 
-    let count = parseInt(localStorage.getItem('prison_days')) || 0;
+      let currentDate = new Date();
 
-    function render() {
-      container.innerHTML = '';
-      countDisplay.textContent = count;
+      let dailyData =
+        JSON.parse(localStorage.getItem("prison_days_dict")) || {};
 
-      const totalGroups = Math.ceil(count / 5);
+      // Obtener la clave interna en formato 'YYYY-MM-DD' para localStorage
+      function getStorageKey(dateObj) {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
 
-      for (let g = 0; g < totalGroups; g++) {
-        const groupDiv = document.createElement('div');
-        groupDiv.className = 'group';
+      // Formatear la fecha a un texto fácil de leer (ej: "lun, 16 de sep de 2024")
+      function getHumanReadableDate(dateObj) {
+        const options = {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        };
+        return new Intl.DateTimeFormat("en-EN", options).format(dateObj);
+      }
 
-        const marksInGroup = Math.min(5, count - (g * 5));
+      // Obtener las rayas del día actual
+      function getCurrentCount() {
+        const dateKey = getStorageKey(currentDate);
+        return dailyData[dateKey] || 0;
+      }
 
-        for (let m = 1; m <= marksInGroup; m++) {
-          const markDiv = document.createElement('div');
-          
-          if (m < 5) {
-            markDiv.className = 'mark vertical-mark';
-            markDiv.style.setProperty('--rand', Math.sin(g * 5 + m));
-          } else {
-            markDiv.className = 'mark horizontal-mark';
+      // Renderizar marcas en pantalla
+      function render() {
+        currentDateText.textContent = getHumanReadableDate(currentDate);
+
+        const count = getCurrentCount();
+        countDisplay.textContent = count;
+
+        container.innerHTML = "";
+        const totalGroups = Math.ceil(count / 5);
+
+        for (let g = 0; g < totalGroups; g++) {
+          const groupDiv = document.createElement("div");
+          groupDiv.className = "group";
+
+          const marksInGroup = Math.min(5, count - g * 5);
+
+          for (let m = 1; m <= marksInGroup; m++) {
+            const markDiv = document.createElement("div");
+
+            if (m < 5) {
+              markDiv.className = "mark vertical-mark";
+              markDiv.style.setProperty("--rand", Math.sin(g * 5 + m));
+            } else {
+              markDiv.className = "mark horizontal-mark";
+            }
+
+            groupDiv.appendChild(markDiv);
           }
-          
-          groupDiv.appendChild(markDiv);
+
+          container.appendChild(groupDiv);
         }
 
-        container.appendChild(groupDiv);
+        container.scrollTop = container.scrollHeight;
       }
 
-      container.scrollTop = container.scrollHeight;
-    }
+      // Guardar cambios en localStorage
+      function saveAndRender(newCount) {
+        const dateKey = getStorageKey(currentDate);
+        if (newCount <= 0) {
+          delete dailyData[dateKey];
+        } else {
+          dailyData[dateKey] = newCount;
+        }
 
-    wall.addEventListener('click', () => {
-      count++;
-      saveAndRender();
-    });
-
-    wall.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      if (count > 0) {
-        count--;
-        saveAndRender();
+        localStorage.setItem("prison_days_dict", JSON.stringify(dailyData));
+        render();
       }
-    });
 
-    function saveAndRender() {
-      localStorage.setItem('prison_days', count);
+      // Eventos de click en la pared
+      wall.addEventListener("click", (e) => {
+        if (e.target.closest("#navbar")) return;
+
+        const currentCount = getCurrentCount();
+        saveAndRender(currentCount + 1);
+      });
+
+      wall.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        if (e.target.closest("#navbar")) return;
+
+        const currentCount = getCurrentCount();
+        if (currentCount > 0) {
+          saveAndRender(currentCount - 1);
+        }
+      });
+
+      // Navegación entre días
+      prevBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        currentDate.setDate(currentDate.getDate() - 1);
+        render();
+      });
+
+      nextBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        currentDate.setDate(currentDate.getDate() + 1);
+        render();
+      });
+
+      todayBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        currentDate = new Date();
+        render();
+      });
+
+      currentDateText.addEventListener("click", (e) => {
+        e.stopPropagation();
+        currentDate = new Date();
+        render();
+      });
+
+      resetBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (
+          confirm(
+            `Do you really want to reset the count for ${getHumanReadableDate(currentDate)}?`,
+          )
+        ) {
+          saveAndRender(0);
+        }
+      });
+
       render();
-    }
-
-    render();
-  </script>
-</body>
+    </script>
+  </body>
 </html>
