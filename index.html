@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prison Counter</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: monospace;
+    }
+
+    /* Fondo simulando pared de prisión / concreto */
+    .wall {
+      width: 100vw;
+      height: 100vh;
+      background-color: #2b2b2b;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 0),
+        radial-gradient(rgba(0, 0, 0, 0.4) 1px, transparent 0);
+      background-size: 20px 20px, 30px 30px;
+      background-position: 0 0, 15px 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px;
+      box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.8);
+      cursor: pointer;
+    }
+
+    /* Contenedor principal de los grupos de rayas */
+    #tally-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      align-content: flex-start;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    #tally-container::-webkit-scrollbar {
+      display: none;
+    }
+    #tally-container {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Cada grupo de hasta 5 rayas */
+    .group {
+      position: relative;
+      width: 50px;
+      height: 60px;
+      display: flex;
+      justify-content: flex-start; /* Alinea las rayas ordenadamente de izquierda a derecha */
+      gap: 9px;                   /* Espaciado constante entre rayas verticales */
+      align-items: center;
+    }
+
+    /* Estilo base de las rayas talladas */
+    .mark {
+      background-color: #d8d8d8;
+      box-shadow: 
+        -1px -1px 1px rgba(0,0,0,0.8),
+        1px 1px 1px rgba(255,255,255,0.2);
+      border-radius: 2px;
+      opacity: 0.9;
+    }
+
+    /* Rayas verticales (1 a 4) */
+    .vertical-mark {
+      width: 4px;
+      height: 100%;
+      transform: rotate(calc(-2deg + 4deg * var(--rand)));
+    }
+
+    /* Quinta raya (Horizontal / Cruzada) */
+    .horizontal-mark {
+      position: absolute;
+      top: 50%;
+      left: -6px;
+      width: 62px;
+      height: 5px;
+      transform: translateY(-50%) rotate(-18deg);
+      z-index: 10;
+    }
+
+    .footer {
+      color: #666;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .counter {
+      color: #888;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="wall" id="wall">
+    <div id="tally-container"></div>
+    
+    <div class="footer">
+      <span>Left click: +1 | Right click: -1</span>
+      <span class="counter">Total: <span id="day-count">0</span></span>
+    </div>
+  </div>
+
+  <script>
+    const wall = document.getElementById('wall');
+    const container = document.getElementById('tally-container');
+    const countDisplay = document.getElementById('day-count');
+
+    let count = parseInt(localStorage.getItem('prison_days')) || 0;
+
+    function render() {
+      container.innerHTML = '';
+      countDisplay.textContent = count;
+
+      const totalGroups = Math.ceil(count / 5);
+
+      for (let g = 0; g < totalGroups; g++) {
+        const groupDiv = document.createElement('div');
+        groupDiv.className = 'group';
+
+        const marksInGroup = Math.min(5, count - (g * 5));
+
+        for (let m = 1; m <= marksInGroup; m++) {
+          const markDiv = document.createElement('div');
+          
+          if (m < 5) {
+            markDiv.className = 'mark vertical-mark';
+            markDiv.style.setProperty('--rand', Math.sin(g * 5 + m));
+          } else {
+            markDiv.className = 'mark horizontal-mark';
+          }
+          
+          groupDiv.appendChild(markDiv);
+        }
+
+        container.appendChild(groupDiv);
+      }
+
+      container.scrollTop = container.scrollHeight;
+    }
+
+    wall.addEventListener('click', () => {
+      count++;
+      saveAndRender();
+    });
+
+    wall.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      if (count > 0) {
+        count--;
+        saveAndRender();
+      }
+    });
+
+    function saveAndRender() {
+      localStorage.setItem('prison_days', count);
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
